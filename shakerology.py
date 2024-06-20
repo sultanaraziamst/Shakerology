@@ -39,4 +39,7 @@ def main():
             
             recipe = get_cocktail_recipe(cocktail_name)
             display_recipe(cocktail_name, recipe)
-            
+
+if __name__=="__main__":
+    main()
+
