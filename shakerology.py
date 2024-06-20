@@ -25,4 +25,18 @@ def display_recipe(cocktail_name, ingredients):
         print(f"Recipe for {cocktail_name}:")
         for ingredients in ingredients:
             print(f" {ingredients}")
-   
+    else:
+        print(f"Sorry, recipe for '{cocktail_name}' not found. Please try again.")
+    
+def main():
+    print("Welcome to the Shakerology app! ")
+    while True:
+            cocktail_name = input("Enter the name of the Cocktail (or 'quit' to exit):").strip().capitalize()
+
+            if cocktail_name.lower() == 'quit':
+                print("Existing the app. Cheers!")
+                break
+            
+            recipe = get_cocktail_recipe(cocktail_name)
+            display_recipe(cocktail_name, recipe)
+            
