@@ -8,3 +8,21 @@ cocktail_data = {
     "Cosmopolitan": ["1 1/2 oz Vodka", "1 oz Cranberry juice", "1/2 oz Triple sec", "1/2 oz Lime juice"],
 }
     # Add more cocktails here
+
+def load_cocktail_data():
+
+    """Function to load cocktail data into memoery."""
+    return cocktail_data
+
+def get_cocktail_recipe(cocktail_name):
+    """Function to retrive recipe for a given cocktail name."""
+    cocktails = load_cocktail_data()
+    return cocktails.get(cocktail_name)
+
+def display_recipe(cocktail_name, ingredients):
+    """Function to display recipe for a given cocktail."""
+    if ingredients:
+        print(f"Recipe for {cocktail_name}:")
+        for ingredients in ingredients:
+            print(f" {ingredients}")
+   
