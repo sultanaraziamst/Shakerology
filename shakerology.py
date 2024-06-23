@@ -1,45 +1,41 @@
-# Define cocktail data
-cocktail_data = {
-    "Margarita": ["2 oz Tequila", "1 oz Lime juice", "1 oz Cointreau", "Salt for rimming"],
-    "Martini": ["2 oz Gin", "1/2 oz Dry vermouth", "Lemon twist or olive for garnish"],
-    "Negroni": ["1 oz Gin", "1 oz Campari", "1 oz Sweet vermouth", "Orange twist or slice for garnish"],
-    "Old Fashioned": ["2 oz Bourbon or Rye whiskey", "1 sugar cube or 1/2 oz simple syrup", 
-                      "2-3 dashes Angostura bitters", "Orange twist for garnish"],
-    "Cosmopolitan": ["1 1/2 oz Vodka", "1 oz Cranberry juice", "1/2 oz Triple sec", "1/2 oz Lime juice"],
-}
-    # Add more cocktails here
-
-def load_cocktail_data():
-
-    """Function to load cocktail data into memoery."""
-    return cocktail_data
+import sqlite3
 
 def get_cocktail_recipe(cocktail_name):
-    """Function to retrive recipe for a given cocktail name."""
-    cocktails = load_cocktail_data()
-    return cocktails.get(cocktail_name)
+    """Function to retrieve recipe for a given cocktail name."""
+    conn = sqlite3.connect('recipes.db')
+    cursor = conn.cursor()
+
+    # Perform a case-insensitive search for the cocktail name
+    cursor.execute('''
+        SELECT ingredient 
+        FROM ingredients 
+        WHERE cocktail_id = (SELECT id FROM cocktails WHERE LOWER(name) = LOWER(?))
+    ''', (cocktail_name,))
+    ingredients = cursor.fetchall()
+
+    conn.close()
+    return [ingredient[0] for ingredient in ingredients] if ingredients else None
 
 def display_recipe(cocktail_name, ingredients):
     """Function to display recipe for a given cocktail."""
     if ingredients:
         print(f"Recipe for {cocktail_name}:")
-        for ingredients in ingredients:
-            print(f" {ingredients}")
+        for ingredient in ingredients:
+            print(f" {ingredient}")
     else:
         print(f"Sorry, recipe for '{cocktail_name}' not found. Please try again.")
-    
+
 def main():
-    print("Welcome to the Shakerology app! ")
+    print("Welcome to the Shakerology app!")
     while True:
-            cocktail_name = input("Enter the name of the Cocktail (or 'quit' to exit):").strip().capitalize()
+        cocktail_name = input("Enter the name of the Cocktail (or 'quit' to exit):").strip()
 
-            if cocktail_name.lower() == 'quit':
-                print("Existing the app. Cheers!")
-                break
-            
-            recipe = get_cocktail_recipe(cocktail_name)
-            display_recipe(cocktail_name, recipe)
+        if cocktail_name.lower() == 'quit':
+            print("Exiting the app. Cheers!")
+            break
 
-if __name__=="__main__":
-    main()
+        recipe = get_cocktail_recipe(cocktail_name)
+        display_recipe(cocktail_name, recipe)
 
+if __name__ == "__main__":
+            main()
