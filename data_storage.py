@@ -1,67 +1,64 @@
 import sqlite3
+import json
 
-#connect to the sqlite database
+# Load JSON data from a file with the correct encoding
+with open('recipes.json', 'r', encoding='utf-8') as file:
+    data = json.load(file)
 
-conn = sqlite3.connect('reci')
-
+# Connect to SQLite database (or create it)
+conn = sqlite3.connect('recipes.db')
 cursor = conn.cursor()
 
-#Function to create the table
-
-def create_table():
-
-    cursor.execute('''
-    CREATE TABLE IF NOT EXIST users(
+# Create tables
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS cocktails (
     id INTEGER PRIMARY KEY,
     name TEXT,
-    age INTEGER,
-    email TEXT
+    glass TEXT,
+    category TEXT,
+    garnish TEXT,
+    preparation TEXT
 )
 ''')
-conn.commit()
 
-#Function to insert sample data
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS ingredients (
+    id INTEGER PRIMARY KEY,
+    cocktail_id INTEGER,
+    unit TEXT,
+    amount REAL,
+    ingredient TEXT,
+    label TEXT,
+    FOREIGN KEY (cocktail_id) REFERENCES cocktails(id)
 
-#Function to read data
+)
+''')
 
-def read_data():
-    cursor.execute('SELECT * FROM users')
-    rows = cursor.fetchall()
-    for rows in rows:
-        print(row)
-
-#Function to update data
-def update_data(user_id, new_name, new_age, new_email):
+# Insert JSON data into the tables
+for cocktail in data:
+    name = cocktail.get('name', 'Unnamed')
+    glass = cocktail.get('glass', 'Unknown glass')
+    category = cocktail.get('category', 'Uncategorized')  # Provide a default value if 'category' key is missing
+    garnish = cocktail.get('garnish', 'No garnish')       # Provide a default value if 'garnish' key is missing
+    preparation = cocktail.get('preparation', 'No preparation') # Provide a default value if 'preparation' key is missing
     cursor.execute('''
-    UPDATE users
-    SET name = ?, age=?, email = ?
-    WHERE id = ?
-    ''', (new_name, new_age, new_email, user_id))
-    conn.commit()
+    INSERT INTO cocktails (name, glass, category, garnish, preparation)
+    VALUES (?, ?, ?, ?, ?)
+    ''', (name, glass, category, garnish, preparation))
+    cocktail_id = cursor.lastrowid
 
-#Function to delete data
-def delete_data(user_id):
-    cursor.execute('DELETE FROM users WHERE id = ?', (user_id,))
-    conn.commit()
+    for ingredient in cocktail['ingredients']:
+        unit = ingredient.get('unit', 'unknown')          # Provide a default value if 'unit' key is missing
+        amount = ingredient.get('amount', 0)              # Provide a default value if 'amount' key is missing
+        ingredient_name = ingredient.get('ingredient', 'unknown')  # Provide a default value if 'ingredient' key is missing
+        label = ingredient.get('label', None)             # Handle the 'label' key, default to None
+        cursor.execute('''
+        INSERT INTO ingredients (cocktail_id, unit, amount, ingredient, label)
+        VALUES (?, ?, ?, ?, ?)
+        ''', (cocktail_id, unit, amount, ingredient_name, label))
 
-#Function to close the database connection
-def close_connection():
-    cursor.close()
-    conn.close()
-#Main program
-if__name__=='__main__':
-    create_table()
-    print("Initial data: ")
-    read_data()
+# Commit changes and close connection
+conn.commit()
+conn.close()
 
-    print("\nUpdating data:")
-    update_data(1, 'Alice smith', 31, 'alice.smith@gmail.com')
-    read_data()
-
-    print("\nDeleting data:")
-    delete_data(2)
-    read_data()
-
-    close_connection()
-
-
+print("Data loaded successfully from JSON file into SQLite database.")
